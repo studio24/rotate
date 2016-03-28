@@ -1,0 +1,32 @@
+{
+    "name": "studio24/rotate",
+    "type": "library",
+    "description": "File rotation utility which rotates and removes old files",
+    "keywords": [
+        "logrotate",
+        "publish-subscribe",
+        "delete",
+        "files"
+    ],
+    "homepage": "https://github.com/studio24/rotate",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Simon R Jones",
+            "email": "simon@studio24.net",
+            "homepage": "http://simonrjones.net",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "studio24\\Rotate\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.2"
+    }
+}
