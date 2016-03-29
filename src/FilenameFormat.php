@@ -35,17 +35,17 @@ class FilenameFormat
     /**
      * Constructor
      *
-     * @param string $filePathPattern Path to files to rotate or delete, filename part can contain patterns
+     * @param string $filenameFormat Filename format to match files against
      * @throws RotateException
      */
-    public function __construct($filePathPattern)
+    public function __construct($filenameFormat)
     {
-        $this->path = dirname($filePathPattern);
+        $this->path = dirname($filenameFormat);
         if (!is_dir($this->path) || !is_readable($this->path)) {
-            throw new RotateException("Directory path does not exist or is not readable at: " . strip_tags($filePathPattern));
+            throw new RotateException("Directory path does not exist or is not readable at: " . strip_tags($filenameFormat));
         }
 
-        $this->filenamePattern = basename($filePathPattern);
+        $this->filenamePattern = basename($filenameFormat);
         $this->filenameRegex = $this->extractRegex($this->filenamePattern);
     }
 
@@ -54,7 +54,7 @@ class FilenameFormat
      *
      * * matches any string, for example *.log matches all files ending .log
      * {Ymd} = matches time segment in a file, for example order.{Ymd}.log matches a file in the format order.20160401.log
-     * Any date format supported by DateTime::createFromFormat is allowed (excluding whitespace and separator characters)
+     * Any date format supported by DateTime::createFromFormat is allowed (excluding the Timezone identifier 'e' and whitespace and separator characters)
      *
      * @param string $filename
      * @return string Regex pattern for matching files (with the ungreedy modifier set)
@@ -80,7 +80,13 @@ class FilenameFormat
         $pattern = preg_replace(array_keys($replacements), array_values($replacements), $pattern);
 
         if (preg_match('/{([^}]+)}/U', $filename, $m)) {
-            $this->dateFormat = $m[1];
+            $dateFormat = $m[1];
+            $validDateFormat = 'djDlSzFMmnYyaAghGHisuOPTU';
+            if (!empty(array_diff(str_split($dateFormat), str_split($validDateFormat)))) {
+                throw new RotateException("Date format is not valid: $dateFormat");
+            }
+
+            $this->dateFormat = $dateFormat;
             $pattern = preg_replace('/{[^}]+}/U', '{([^}]+)}', $pattern);
         }
 
@@ -125,6 +131,16 @@ class FilenameFormat
     public function hasDateFormat()
     {
         return ($this->dateFormat !== null);
+    }
+
+    /**
+     * Return the date format
+     *
+     * @return string
+     */
+    public function getDateFormat()
+    {
+        return $this->dateFormat;
     }
 
 }
