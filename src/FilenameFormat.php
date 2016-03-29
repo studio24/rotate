@@ -1,7 +1,7 @@
 <?php
 namespace studio24\Rotate;
 
-class Filename
+class FilenameFormat
 {
 
     /**
