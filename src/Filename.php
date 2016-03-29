@@ -1,7 +1,7 @@
 <?php
 namespace studio24\Rotate;
 
-class Directory
+class Filename
 {
 
     /**
@@ -18,7 +18,6 @@ class Directory
      */
     protected $filenamePattern;
 
-
     /**
      * Filename regex pattern to match files
      *
@@ -27,37 +26,35 @@ class Directory
     protected $filenameRegex;
 
     /**
+     * Date format within filename
+     *
+     * @var string
+     */
+    protected $dateFormat;
+
+    /**
      * Constructor
      *
-     * @param string $files Path to files to rotate or delete, filename part can contain patterns
+     * @param string $filePathPattern Path to files to rotate or delete, filename part can contain patterns
      * @throws RotateException
      */
-    public function __construct($files)
+    public function __construct($filePathPattern)
     {
-        $this->path = dirname($files);
+        $this->path = dirname($filePathPattern);
         if (!is_dir($this->path) || !is_readable($this->path)) {
-            throw new RotateException("Directory path does not exist or is not readable at: " . strip_tags($files));
+            throw new RotateException("Directory path does not exist or is not readable at: " . strip_tags($filePathPattern));
         }
 
-        $this->filenamePattern = basename($files);
+        $this->filenamePattern = basename($filePathPattern);
         $this->filenameRegex = $this->extractRegex($this->filenamePattern);
     }
 
     /**
      * Extract regex pattern from filename pattern
      *
-     * * matches any string, for example _*.log_ matches all files ending .log
-     * YYYYMMDD = matches time segment in a file, for example _order.YYYYMMDD.log_ matches a file in the format order.20160401.log
-     *
-     * The following time segments are supported:
-     *
-     * YYYY = 4 digit year (e.g. 2016)
-     * MM = 2 digit month (e.g. 03)
-     * DD = 2 digit day (e.g. 01)
-     * hh = 2 digit hour (e.g. 12 or 15)
-     * mm = 2 digit minutes (e.g. 30)
-     * ss = 2 digit seconds (e.g. 25)
-     * W = 1-2 digit Week number (e.g. 5 or 12)
+     * * matches any string, for example *.log matches all files ending .log
+     * {Ymd} = matches time segment in a file, for example order.{Ymd}.log matches a file in the format order.20160401.log
+     * Any date format supported by DateTime::createFromFormat is allowed (excluding whitespace and separator characters)
      *
      * @param string $filename
      * @return string Regex pattern for matching files (with the ungreedy modifier set)
@@ -78,16 +75,14 @@ class Directory
         $pattern = preg_replace(array_keys($escape), array_values($escape), $filename);
 
         $replacements = [
-            '/\*/'     => '(.+)',
-            '/YYYY/'  => '(\d{4})',
-            '/MM/'    => '(\d{2})',
-            '/DD/'    => '(\d{2})',
-            '/hh/'    => '(\d{2})',
-            '/mm/'    => '(\d{2})',
-            '/ss/'    => '(\d{2})',
-            '/W/'     => '(\d{1,2})'
+            '/\*/'     => '.+'
         ];
         $pattern = preg_replace(array_keys($replacements), array_values($replacements), $pattern);
+
+        if (preg_match('/{([^}]+)}/U', $filename, $m)) {
+            $this->dateFormat = $m[1];
+            $pattern = preg_replace('/{[^}]+}/U', '{([^}]+)}', $pattern);
+        }
 
         return '/^' . $pattern . '$/U';
     }
@@ -122,12 +117,14 @@ class Directory
         return $this->filenameRegex;
     }
 
-    public function match($filename, $pattern)
+    /**
+     * Does the filename pattern contain a date format?
+     *
+     * @return bool
+     */
+    public function hasDateFormat()
     {
-
+        return ($this->dateFormat !== null);
     }
-
-
-
 
 }
