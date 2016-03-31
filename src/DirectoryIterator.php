@@ -50,8 +50,8 @@ class DirectoryIterator extends \DirectoryIterator {
         if (!$this->hasDate()) {
             return false;
         }
-
-        if (preg_match($this->filenameFormat->getFilenameRegex(), $m)) {
+    
+        if (preg_match($this->filenameFormat->getFilenameRegex(), $this->getFilename(), $m)) {
             return \DateTime::createFromFormat($this->filenameFormat->getDateFormat(), $m[1]);
         }
 

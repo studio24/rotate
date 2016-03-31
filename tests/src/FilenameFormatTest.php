@@ -25,22 +25,22 @@ class FilenameFormatTest extends PHPUnit_Framework_TestCase {
     {
         $dir = new FilenameFormat('tests/test-files/logs/file.log');
         $this->assertEquals('file.log', $dir->getFilenamePattern());
-        $this->assertEquals('/^file\.log$/U', $dir->getFilenameRegex());
+        $this->assertEquals('/^file\.log$/', $dir->getFilenameRegex());
         $this->assertNotEquals('tests/test-files/logs/file.log', $dir->getFilenameRegex());
 
         $dir = new FilenameFormat('tests/test-files/logs/*.log');
         $this->assertEquals('*.log', $dir->getFilenamePattern());
-        $this->assertEquals('/^.+\.log$/U', $dir->getFilenameRegex());
+        $this->assertEquals('/^.+\.log$/', $dir->getFilenameRegex());
 
         $dir = new FilenameFormat('tests/test-files/logs/payment.{Ymd}.log');
         $this->assertEquals('payment.{Ymd}.log', $dir->getFilenamePattern());
-        $this->assertEquals('/^payment\.{([^}]+)}\.log$/U', $dir->getFilenameRegex());
+        $this->assertEquals('/^payment\.([^.]+)\.log$/', $dir->getFilenameRegex());
 
         $dir = new FilenameFormat('tests/test-files/logs/payment.{Ymd}.log');
-        $this->assertEquals('/^payment\.{([^}]+)}\.log$/U', $dir->getFilenameRegex());
+        $this->assertEquals('/^payment\.([^.]+)\.log$/', $dir->getFilenameRegex());
 
         $dir = new FilenameFormat('tests/test-files/logs/payment.{Ymd}.test}.log');
-        $this->assertEquals('/^payment\.{([^}]+)}\.test}\.log$/U', $dir->getFilenameRegex());
+        $this->assertEquals('/^payment\.([^.]+)\.test}\.log$/', $dir->getFilenameRegex());
     }
 
     public function testHasDate()

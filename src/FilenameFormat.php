@@ -79,7 +79,7 @@ class FilenameFormat
         ];
         $pattern = preg_replace(array_keys($replacements), array_values($replacements), $pattern);
 
-        if (preg_match('/{([^}]+)}/U', $filename, $m)) {
+        if (preg_match('/{([^}]+)}/', $filename, $m)) {
             $dateFormat = $m[1];
             $validDateFormat = 'djDlSzFMmnYyaAghGHisuOPTU';
             if (!empty(array_diff(str_split($dateFormat), str_split($validDateFormat)))) {
@@ -87,10 +87,10 @@ class FilenameFormat
             }
 
             $this->dateFormat = $dateFormat;
-            $pattern = preg_replace('/{[^}]+}/U', '{([^}]+)}', $pattern);
+            $pattern = preg_replace('/{[^}]+}/', '([^.]+)', $pattern);
         }
 
-        return '/^' . $pattern . '$/U';
+        return '/^' . $pattern . '$/';
     }
 
     /**
