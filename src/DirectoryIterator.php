@@ -58,4 +58,15 @@ class DirectoryIterator extends \DirectoryIterator {
         return false;
     }
 
+    /**
+     * Return rotated filename
+     *
+     * @param int $num Rotation number
+     * @return string
+     */
+    public function getRotatedFilename($num)
+    {
+        return $this->getBasename() . '.' . $num;
+    }
+
 }

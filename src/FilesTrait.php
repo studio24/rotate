@@ -3,23 +3,31 @@ namespace studio24\Rotate;
 
 trait FilesTrait 
 {
-    protected $files;
-
-    public function __construct ($files = null)
+    /**
+     * The filename format we're matching against
+     *
+     * @var FilenameFormat
+     */
+    protected $filenameFormat;
+    
+    /**
+     * Set the filename format we're matching
+     *
+     * @param $filenameFormat
+     */
+    public function setFilenameFormat($filenameFormat)
     {
-        if ($files !== null) {
-            $this->setFiles($files);
-        }
+        $this->filenameFormat = new FilenameFormat($filenameFormat);
     }
 
-    public function setFiles($files)
+    /**
+     * Return the filename format we're matching
+     *
+     * @return FilenameFormat
+     */
+    public function getFilenameFormat()
     {
-        $this->files = $files;
-    }
-
-    public function getFiles()
-    {
-        return $this->files;
+        return $this->filenameFormat;
     }
 
 }
