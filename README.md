@@ -58,6 +58,9 @@ $rotate = new Delete('path/to/images/*.jpg');
 $deletedFiles = $rotate->deleteByFileModifiedDate('3 months');
 ```
 
+This method accepts either a valid DateInterval object or a relative date format as specified on 
+[Relative Formats](http://php.net/manual/en/datetime.formats.relative.php).
+
 #### Time format in filename
 Delete all order logfiles with a date in their filename over 3 months old.
 

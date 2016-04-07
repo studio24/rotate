@@ -53,6 +53,7 @@ class RotateTest extends PHPUnit_Framework_TestCase
 
         $files = $rotate->run();
         $this->assertEquals(['./orders.log'], $files);
+        $this->assertFalse(file_exists('orders.log.1'));
 
         chdir($this->dir . '/rotate2');
 
@@ -137,6 +138,13 @@ class RotateTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([
             './payment.20160324.log',
             './payment.20160325.log'
+        ], $files);
+
+        $rotate->setNow(new DateTime('2016-04-08 00:00:00'));
+        $files = $rotate->deleteByFilenameTime(new DateInterval('P7D'));
+        $this->assertEquals([
+            './payment.20160326.log',
+            './payment.20160331.log'
         ], $files);
 
         chdir($oldDir);
