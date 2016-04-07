@@ -24,5 +24,8 @@ nbproject
 # e.g. cache, package, build and file upload folders
 ##
 
+tests/tmp/*
+!tests/tmp/.gitkeep
+
 # Composer
 vendor

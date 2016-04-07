@@ -1,4 +1,4 @@
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit bootstrap="tests/src/bootstrap.php"
          colors="true"
          syntaxCheck="true"
 >

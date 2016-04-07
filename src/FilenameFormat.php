@@ -36,13 +36,13 @@ class FilenameFormat
      * Constructor
      *
      * @param string $filenameFormat Filename format to match files against
-     * @throws RotateException
+     * @throws FilenameFormatException
      */
     public function __construct($filenameFormat)
     {
         $this->path = dirname($filenameFormat);
         if (!is_dir($this->path) || !is_readable($this->path)) {
-            throw new RotateException("Directory path does not exist or is not readable at: " . strip_tags($filenameFormat));
+            throw new FilenameFormatException("Directory path does not exist or is not readable at: " . strip_tags($filenameFormat));
         }
 
         $this->filenamePattern = basename($filenameFormat);
@@ -58,12 +58,12 @@ class FilenameFormat
      *
      * @param string $filename
      * @return string Regex pattern for matching files (with the ungreedy modifier set)
-     * @throws RotateException
+     * @throws FilenameFormatException
      */
     public function extractRegex($filename)
     {
         if (strpos('/', $filename) !== false) {
-            throw new RotateException("Filename part cannot contain '/' character");
+            throw new FilenameFormatException("Filename part cannot contain '/' character");
         }
 
         $escape = [
@@ -83,7 +83,7 @@ class FilenameFormat
             $dateFormat = $m[1];
             $validDateFormat = 'djDlSzFMmnYyaAghGHisuOPTU';
             if (!empty(array_diff(str_split($dateFormat), str_split($validDateFormat)))) {
-                throw new RotateException("Date format is not valid: $dateFormat");
+                throw new FilenameFormatException("Date format is not valid: $dateFormat");
             }
 
             $this->dateFormat = $dateFormat;

@@ -5,7 +5,7 @@ use studio24\Rotate\FilenameFormat;
 class FilenameFormatTest extends PHPUnit_Framework_TestCase {
 
     /**
-     * @expectedException studio24\Rotate\RotateException
+     * @expectedException studio24\Rotate\FilenameFormatException
      */
     public function testFolderDoesNotExist()
     {
@@ -65,7 +65,7 @@ class FilenameFormatTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @expectedException studio24\Rotate\RotateException
+     * @expectedException studio24\Rotate\FilenameFormatException
      */
     public function testInvalidDateFormat()
     {
