@@ -3,10 +3,9 @@
     "type": "library",
     "description": "File rotation utility which rotates and removes old files",
     "keywords": [
+        "rotate",
         "logrotate",
-        "publish-subscribe",
-        "delete",
-        "files"
+        "delete files"
     ],
     "homepage": "https://github.com/studio24/rotate",
     "license": "MIT",
