@@ -1,7 +1,5 @@
 # Rotate
 
-_Note: Not ready for production use: code is in development_
-
 Simple file rotation utility which rotates and removes old files, useful where you cannot use logrotate (e.g. a Windows system) 
 or you want to rotate or delete files based on a timestamp or date contained in the filename. 
 
