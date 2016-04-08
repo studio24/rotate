@@ -35,7 +35,7 @@ When matching patterns all files in the specified folder are scanned, we do not 
 passing `path/to/*.log` will search for all files ending .log in the folder path/to.
 
 #### Datetime formats
-For datetime formats, any date format supported by `[DateTime::createFromFormat](http://php.net/datetime.createfromformat)` is allowed 
+For datetime formats, any date format supported by [DateTime::createFromFormat](http://php.net/datetime.createfromformat) is allowed 
 excluding the Timezone identifier `e` and whitespace and separator characters. 
 
 ### Rotate
