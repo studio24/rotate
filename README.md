@@ -15,6 +15,31 @@ You can use Rotate in two modes: rotate (renames files and removes oldest files)
 
 Import at the top of your PHP script via:
 
+debug.log.3 and so on. It keeps 10 copies, so it deletes debug.log.10 and renames debug.log.9 to debug.log.10.
+
+```sh
+use studio24\Rotate\Rotate;
+```
+
+## A note on filename patterns
+
+Both Rotate and Delete pass in the filename pattern you want to match for in the contstructor or via the setFilenameFormat() method.
+This can be used to match a single file, files matching a pattern, or files with a datetime within the filename pattern. 
+
+The following patterns are supported when matching filenames:
+
+* debug.log - exact match for a file
+* _*_ character - matches any string, for example _*.log_ matches all files ending .log
+* {Ymd} - matches time segment in a file, for example _order.{Ymd}.log_ matches a file in the format order.20160401.log
+
+#### Search within the current folder
+When matching patterns all files in the specified folder are scanned, we do not recursively search for files. For example 
+passing _path/to/*.log_ will search for all files ending .log in the folder path/to.
+
+#### Datetime formats
+For datetime formats, any date format supported by [DateTime::createFromFormat](http://php.net/datetime.createfromformat) is allowed 
+excluding the Timezone identifier 'e' and whitespace and separator characters. 
+
 ### Rotate
 
 Rotate log files in a similar manner to logrotate.
@@ -46,8 +71,11 @@ $rotate->size("12MB");
 
 ### Delete
 
+Deletes files based on modification time, datetime in the filename, or based on a custom callback function.
+
 #### Time-based
-Delete all image files over 3 months old 
+
+Deletes files based on the modification time. For example, to delete all JPG files in a folder over 3 months old: 
 
 ```sh
 use studio24\Rotate\Delete;
@@ -56,11 +84,12 @@ $rotate = new Delete('path/to/images/*.jpg');
 $deletedFiles = $rotate->deleteByFileModifiedDate('3 months');
 ```
 
-This method accepts either a valid DateInterval object or a relative date format as specified on 
+The deleteByFileModifiedDate() method accepts either a valid DateInterval object or a relative date format as specified on 
 [Relative Formats](http://php.net/manual/en/datetime.formats.relative.php).
 
 #### Time format in filename
-Delete all order logfiles with a date in their filename over 3 months old.
+Deletes files based on the datetime in the filename. For example, to delete all  order logfiles with a date in their 
+filename over 3 months old:
 
 ```sh
 use studio24\Rotate\Delete;
@@ -70,10 +99,12 @@ $deletedFiles = $rotate->deleteByFilenameTime('3 months');
 ```
 
 #### Based on a custom callback 
-Delete all image files called 1000.jpg and below.
+Deletes files based on a custom callback function, this is useful if you need to perform more complex code to assess whether a file
+should be deleted. For example, to delete all image files called 1000.jpg and below:
 
 ```sh
 use studio24\Rotate\Delete;
+use studio24\Rotate\DirectoryIterator;
 
 $rotate = new Delete('path/to/logs/*.jpg');
 $deletedFiles = $rotate->deleteByCallback(function(DirectoryIterator $file){
@@ -84,15 +115,14 @@ $deletedFiles = $rotate->deleteByCallback(function(DirectoryIterator $file){
 });
 ```
 
-## Filename patterns
+##### DirectoryIterator
+The callback function must accept one parameter $file, which is of type \studio24\Rotate\DirectoryIterator.
 
-The following patterns are supported when matching filenames:
+This iterator has the following methods in addition to the normal [SPL DirectoryIterator](http://php.net/DirectoryIterator).
 
-* _*_ matches any string, for example _*.log_ matches all files ending .log
-* {Ymd} = matches time segment in a file, for example order.{Ymd}.log matches a file in the format order.20160401.log
-
-Any date format supported by [DateTime::createFromFormat](http://php.net/datetime.createfromformat) is allowed 
-(excluding the Timezone identifier 'e' and whitespace and separator characters)
+* isMatch() - whether the current file matches the filename patter we are looking for
+* hasDate() - whether the current file has a datetime within the filename
+* getFilenameDate() - return the datetime from the current file (as a DateTime object)
 
 ## License
 
