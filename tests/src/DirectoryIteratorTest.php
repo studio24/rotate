@@ -8,7 +8,7 @@ class DirectoryIteratorTest extends PHPUnit_Framework_TestCase {
     public function testIsMatch()
     {
         $it = new DirectoryIterator('tests/test-files/files');
-        $it->setFilenameFormat(new FilenameFormat('Test*.pdf'));
+        $it->setFilenameFormat(new FilenameFormat('*.pdf'));
         foreach ($it as $item) {
             if ($it->isFile()) {
                 $this->assertEquals('studio24\Rotate\DirectoryIterator', get_class($item));

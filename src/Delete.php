@@ -120,7 +120,8 @@ class Delete extends RotateAbstract
         $dir->setFilenameFormat($this->getFilenameFormat());
         foreach ($dir as $file) {
             if ($file->isFile() && $file->isMatch()) {
-                $fileDate = new DateTime($file->getMTime());
+                $fileDate = new DateTime();
+                $fileDate->setTimestamp($file->getMTime());
                 if ($fileDate < $oldestDate) {
                     if (!$this->isDryRun()) {
                         if (!unlink($file->getPathname())) {
@@ -156,7 +157,7 @@ class Delete extends RotateAbstract
      * @throws FilenameFormatException
      * @throws RotateException
      */
-    public function deleteByCallback(callback $callback)
+    public function deleteByCallback(callable $callback)
     {
         if (!$this->hasFilenameFormat()) {
             throw new FilenameFormatException('You must set a filename format to match files against');
