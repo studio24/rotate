@@ -15,30 +15,28 @@ You can use Rotate in two modes: rotate (renames files and removes oldest files)
 
 Import at the top of your PHP script via:
 
-debug.log.3 and so on. It keeps 10 copies, so it deletes debug.log.10 and renames debug.log.9 to debug.log.10.
-
 ```sh
 use studio24\Rotate\Rotate;
 ```
 
 ## A note on filename patterns
 
-Both Rotate and Delete pass in the filename pattern you want to match for in the contstructor or via the setFilenameFormat() method.
+Both Rotate and Delete pass in the filename pattern you want to match for in the constructor or via the `setFilenameFormat()` method.
 This can be used to match a single file, files matching a pattern, or files with a datetime within the filename pattern. 
 
 The following patterns are supported when matching filenames:
 
-* debug.log - exact match for a file
-* _*_ character - matches any string, for example _*.log_ matches all files ending .log
-* {Ymd} - matches time segment in a file, for example _order.{Ymd}.log_ matches a file in the format order.20160401.log
+* `debug.log` - exact match for a file called debug.log
+* `*` - matches any string, for example `*.log` matches all files ending .log
+* `{Ymd}` - matches time segment in a file, for example `order.{Ymd}.log` matches a file in the format order.20160401.log
 
 #### Search within the current folder
 When matching patterns all files in the specified folder are scanned, we do not recursively search for files. For example 
-passing _path/to/*.log_ will search for all files ending .log in the folder path/to.
+passing `path/to/*.log` will search for all files ending .log in the folder path/to.
 
 #### Datetime formats
-For datetime formats, any date format supported by [DateTime::createFromFormat](http://php.net/datetime.createfromformat) is allowed 
-excluding the Timezone identifier 'e' and whitespace and separator characters. 
+For datetime formats, any date format supported by `[DateTime::createFromFormat](http://php.net/datetime.createfromformat)` is allowed 
+excluding the Timezone identifier `e` and whitespace and separator characters. 
 
 ### Rotate
 
@@ -56,14 +54,14 @@ $rotate->run();
 
 #### How many copies to keep
 
-You can change the default number of copies to keep (10) via:
+Rotate keeps 10 copies of files by default, you can change this via:
 
 ```
 $rotate->keep(20);
 ```
 
 #### Rotated based on filesize
-You can only rotate files when they reach a certain filesize, rather than automatically rotate each time the $rotate->run() method is run.
+You can only rotate files when they reach a certain filesize, rather than automatically rotate each time the `$rotate->run()` method is run.
  
 ```
 $rotate->size("12MB");
@@ -84,7 +82,7 @@ $rotate = new Delete('path/to/images/*.jpg');
 $deletedFiles = $rotate->deleteByFileModifiedDate('3 months');
 ```
 
-The deleteByFileModifiedDate() method accepts either a valid DateInterval object or a relative date format as specified on 
+The `deleteByFileModifiedDate()` method accepts either a valid DateInterval object or a relative date format as specified on 
 [Relative Formats](http://php.net/manual/en/datetime.formats.relative.php).
 
 #### Time format in filename
@@ -116,13 +114,13 @@ $deletedFiles = $rotate->deleteByCallback(function(DirectoryIterator $file){
 ```
 
 ##### DirectoryIterator
-The callback function must accept one parameter $file, which is of type \studio24\Rotate\DirectoryIterator.
+The callback function must accept one parameter `$file`, which is of type `\studio24\Rotate\DirectoryIterator`.
 
 This iterator has the following methods in addition to the normal [SPL DirectoryIterator](http://php.net/DirectoryIterator).
 
-* isMatch() - whether the current file matches the filename patter we are looking for
-* hasDate() - whether the current file has a datetime within the filename
-* getFilenameDate() - return the datetime from the current file (as a DateTime object)
+* `isMatch()` - whether the current file matches the filename patter we are looking for
+* `hasDate()` - whether the current file has a datetime within the filename
+* `getFilenameDate()` - return the datetime from the current file (as a DateTime object)
 
 ## License
 
