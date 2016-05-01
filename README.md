@@ -1,6 +1,6 @@
 # Rotate
 
-Simple file rotation utility which rotates and removes old files, useful where you cannot use logrotate (e.g. a Windows system) 
+Simple file rotation utility which rotates and removes old files or folders, useful where you cannot use logrotate (e.g. a Windows system) 
 or you want to rotate or delete files based on a timestamp or date contained in the filename. 
 
 ## Installation
@@ -19,24 +19,40 @@ Import at the top of your PHP script via:
 use studio24\Rotate\Rotate;
 ```
 
-## A note on filename patterns
+### Setting the filename format to match
 
 Both Rotate and Delete pass in the filename pattern you want to match for in the constructor or via the `setFilenameFormat()` method.
 This can be used to match a single file, files matching a pattern, or files with a datetime within the filename pattern. 
 
-The following patterns are supported when matching filenames:
+Rotate only works on files. Delete can also delete folders and recursively deletes any child files in that folder. 
+
+#### Matches on leaf elements
+
+Please note files are matched on the last leaf element. All files in the parent folder are scanned, files (and folders 
+for Delete) are checked to see whether they match the specified pattern.
+
+For example passing `path/to/*.log` will search for all files ending .log in the folder `path/to`.
+
+#### Filename patterns
+
+The following patterns are supported when matching files or folders:
 
 * `debug.log` - exact match for a file called debug.log
 * `*` - matches any string, for example `*.log` matches all files ending .log
 * `{Ymd}` - matches time segment in a file, for example `order.{Ymd}.log` matches a file in the format order.20160401.log
 
-## Deleting folders
+#### Datetime formats
+
+For datetime formats, any date format supported by [DateTime::createFromFormat](http://php.net/datetime.createfromformat) is allowed 
+excluding the Timezone identifier `e` and whitespace and separator characters. 
+
+### Deleting folders recursively
 
 You can also delete folders and all child files that match. This is, however, dangerous so by default no folders can be deleted. You 
  need to explicitly add folder paths that are safe to delete via `Delete::addSafeRecursiveDeletePath($path)`. When using 
- this function you need to use the full path. Use `realpath()` to expand full paths if you need to.
+ this function you need to use the full absolute path. Use `realpath()` to expand full paths if you need to.
 
-For example, if you want to delete all folders in /var/www/test/staging/data/logs/ that are 1+ months old:
+For example, if you want to delete all folders in `/var/www/test/staging/data/logs/` that are 1+ months old:
 
 ```
 $rotate = new Delete('/var/www/test/staging/data/logs/old-logs/*');
@@ -45,14 +61,6 @@ $files = $rotate->deleteByFilenameTime('1 month');
 ```
 
 The above code would allow you to delete folders within `/var/www/test/staging/data/logs/` only. 
-
-#### Search within the current folder
-When matching patterns all files in the specified folder are scanned, we do not recursively search for files. For example 
-passing `path/to/*.log` will search for all files ending .log in the folder path/to.
-
-#### Datetime formats
-For datetime formats, any date format supported by [DateTime::createFromFormat](http://php.net/datetime.createfromformat) is allowed 
-excluding the Timezone identifier `e` and whitespace and separator characters. 
 
 ### Rotate
 
