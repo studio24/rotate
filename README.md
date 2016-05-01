@@ -30,6 +30,22 @@ The following patterns are supported when matching filenames:
 * `*` - matches any string, for example `*.log` matches all files ending .log
 * `{Ymd}` - matches time segment in a file, for example `order.{Ymd}.log` matches a file in the format order.20160401.log
 
+## Deleting folders
+
+You can also delete folders and all child files that match. This is, however, dangerous so by default no folders can be deleted. You 
+ need to explicitly add folder paths that are safe to delete via `Delete::addSafeRecursiveDeletePath($path)`. When using 
+ this function you need to use the full path. Use `realpath()` to expand full paths if you need to.
+
+For example, if you want to delete all folders in /var/www/test/staging/data/logs/ that are 1+ months old:
+
+```
+$rotate = new Delete('/var/www/test/staging/data/logs/old-logs/*');
+$rotate->addSafeRecursiveDeletePath('/var/www/test/staging/data/logs/');
+$files = $rotate->deleteByFilenameTime('1 month');
+```
+
+The above code would allow you to delete folders within `/var/www/test/staging/data/logs/` only. 
+
 #### Search within the current folder
 When matching patterns all files in the specified folder are scanned, we do not recursively search for files. For example 
 passing `path/to/*.log` will search for all files ending .log in the folder path/to.

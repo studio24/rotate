@@ -1,6 +1,8 @@
 <?php
 namespace studio24\Rotate;
 
+// @todo support '/cygdrive/z/bakerdays-shared/' . $environment . '/processed-preview/*/preview_*.jpg'
+
 class FilenameFormat
 {
 

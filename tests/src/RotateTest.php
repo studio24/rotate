@@ -248,4 +248,69 @@ class RotateTest extends PHPUnit_Framework_TestCase
         chdir($oldDir);
     }
 
+    public function testDeleteFolder()
+    {
+        $oldDir = getcwd();
+        chdir($this->dir . '/folders');
+
+        touch('2', strtotime('2016-03-01 12:00:00'));
+
+        $rotate = new Delete('2');
+        $rotate->setDryRun(true);
+        $rotate->setNow(new DateTime('2016-05-01 12:00:00'));
+        $files = $rotate->deleteByFilenameTime('1 month');
+        $this->assertEquals([
+            './2'
+        ], $files);
+
+        $rotate->setDryRun(false);
+        $rotate->addSafeRecursiveDeletePath(realpath(__DIR__ . '/../tmp'));
+        $rotate->setNow(new DateTime('2016-05-01 12:00:00'));
+        $files = $rotate->deleteByFilenameTime('1 month');
+        $this->assertEquals([
+            realpath(__DIR__ . '/../tmp/folders') . '/2/3/test.3.log',
+            realpath(__DIR__ . '/../tmp/folders') . '/2/3',
+            realpath(__DIR__ . '/../tmp/folders') . '/2/test.2.log',
+            realpath(__DIR__ . '/../tmp/folders') . '/2'
+        ], $files);
+
+        chdir($oldDir);
+    }
+
+    /**
+     * @expectedException studio24\Rotate\RotateException
+     */
+    public function testUnsafeDeleteFolder()
+    {
+        $oldDir = getcwd();
+        chdir($this->dir . '/folders');
+
+        touch('2', strtotime('2016-03-01 12:00:00'));
+
+        $rotate = new Delete('2');
+        $rotate->setNow(new DateTime('2016-05-01 12:00:00'));
+        $files = $rotate->deleteByFilenameTime('1 month');
+
+        chdir($oldDir);
+    }
+
+
+    /**
+     * @expectedException studio24\Rotate\RotateException
+     */
+    public function testUnsafeDeleteFolder2()
+    {
+        $oldDir = getcwd();
+        chdir($this->dir . '/folders');
+
+        touch('2', strtotime('2016-03-01 12:00:00'));
+
+        $rotate = new Delete('2');
+        $rotate->addSafeRecursiveDeletePath(realpath(__DIR__ . '/../tmp/files'));
+        $rotate->setNow(new DateTime('2016-05-01 12:00:00'));
+        $files = $rotate->deleteByFilenameTime('1 month');
+
+        chdir($oldDir);
+    }
+
 }

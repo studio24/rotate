@@ -18,6 +18,13 @@ class Delete extends RotateAbstract
     protected $now;
 
     /**
+     * Paths it is safe to perform recursive delete on
+     *
+     * @var array
+     */
+    protected $safeRecursiveDeletePaths = [];
+
+    /**
      * Set the current date & time
      *
      * @param DateTime $dateTime
@@ -42,6 +49,99 @@ class Delete extends RotateAbstract
         }
 
         return $this->now;
+    }
+
+    /**
+     * Add a folder path it is safe to perform recursive delete on
+     *
+     * If you don't do this you cannot recursively delete a folder, this is for safety!
+     *
+     * @param string $path Folder path
+     * @throws RotateException
+     */
+    public function addSafeRecursiveDeletePath($path)
+    {
+        if (!file_exists($path) || !is_dir($path)) {
+            throw new RotateException("Cannot set path as a safe recursive delete path since does not exist or is not a folder");
+        }
+        $this->safeRecursiveDeletePaths[] = $path;
+    }
+
+
+    /**
+     * Delete a file or a folder containing files
+     *
+     * If you try to delete a folder containing files, you must add the path via addSafeRecursiveDeletePath()
+     *
+     * @param $path
+     * @return array Array of deleted files
+     * @throws RotateException
+     */
+    protected function delete($path)
+    {
+        if (is_dir($path)) {
+            return $this->recursiveDeleteFolder($path);
+        } else {
+            if (!unlink($path)) {
+                throw new RotateException('Cannot delete file: ' . $path);
+            }
+            return [$path];
+        }
+    }
+
+    /**
+     * Recursively delete a folder and its contents
+     *
+     * Warning: this can be dangerous, you must add paths that are safe to perform recursive deletion on via addSafeRecursiveDeletePath()
+     * otherwise this function will fail
+     *
+     * @param $folderPath
+     * @return array Array of deleted files
+     * @throws RotateException
+     */
+    protected function recursiveDeleteFolder($folderPath)
+    {
+        $deleted = [];
+        $folderPath = realpath($folderPath);
+        if (!is_dir($folderPath)) {
+            throw new RotateException("Path $path is not a folder");
+        }
+        $safeToDelete = false;
+        foreach ($this->safeRecursiveDeletePaths as $safePath) {
+            if (preg_match('!^' . preg_quote($safePath, '!') . '.+$!', $folderPath)) {
+                $safeToDelete = true;
+            }
+        }
+        if (!$safeToDelete) {
+            throw new RotateException("It is not safe to perform a recursive delete on path: $folderPath");
+        }
+
+        $dir = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($folderPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($dir as $file) {
+            if (!$this->isDryRun()) {
+                if ($file->isDir()) {
+                    if (!rmdir($file->getPathname())) {
+                        throw new RotateException('Cannot delete folder: ' . $file->getPathname());
+                    }
+                } else {
+                    if (!unlink($file->getPathname())) {
+                        throw new RotateException('Cannot delete file: ' . $file->getPathname());
+                    }
+                }
+            }
+            $deleted[] = $file->getPathname();
+        }
+
+        if (!$this->isDryRun()) {
+            rmdir($folderPath);
+            $deleted[] = $folderPath;
+        }
+        unset($dir, $file);
+
+        return $deleted;
     }
 
     /**
@@ -74,14 +174,14 @@ class Delete extends RotateAbstract
         $dir = new DirectoryIterator($this->getFilenameFormat()->getPath());
         $dir->setFilenameFormat($this->getFilenameFormat());
         foreach ($dir as $file) {
-            if ($file->isFile() && $file->isMatch()) {
+            if (!$file->isDot() && $file->isMatch()) {
                 if ($file->getFilenameDate() < $oldestDate) {
                     if (!$this->isDryRun()) {
-                        if (!unlink($file->getPathname())) {
-                            throw new RotateException('Cannot delete file: ' . $file->getPathname());
-                        }
+                        $results = $this->delete($file->getPathname());
+                        $deleted = array_merge($deleted, $results);
+                    } else {
+                        $deleted[] = $file->getPathname();
                     }
-                    $deleted[] = $file->getPathname();
                 }
             }
         }
@@ -119,16 +219,16 @@ class Delete extends RotateAbstract
         $dir = new DirectoryIterator($this->getFilenameFormat()->getPath());
         $dir->setFilenameFormat($this->getFilenameFormat());
         foreach ($dir as $file) {
-            if ($file->isFile() && $file->isMatch()) {
+            if (!$file->isDot() && $file->isMatch()) {
                 $fileDate = new DateTime();
                 $fileDate->setTimestamp($file->getMTime());
                 if ($fileDate < $oldestDate) {
                     if (!$this->isDryRun()) {
-                        if (!unlink($file->getPathname())) {
-                            throw new RotateException('Cannot delete file: ' . $file->getPathname());
-                        }
+                        $results = $this->delete($file->getPathname());
+                        $deleted = array_merge($deleted, $results);
+                    } else {
+                        $deleted[] = $file->getPathname();
                     }
-                    $deleted[] = $file->getPathname();
                 }
             }
         }
@@ -168,14 +268,14 @@ class Delete extends RotateAbstract
         $dir = new DirectoryIterator($this->getFilenameFormat()->getPath());
         $dir->setFilenameFormat($this->getFilenameFormat());
         foreach ($dir as $file) {
-            if ($file->isFile() && $file->isMatch()) {
+            if (!$file->isDot() && $file->isMatch()) {
                 if ($callback($file)) {
                     if (!$this->isDryRun()) {
-                        if (!unlink($file->getPathname())) {
-                            throw new RotateException('Cannot delete file: ' . $file->getPathname());
-                        }
+                        $results = $this->delete($file->getPathname());
+                        $deleted = array_merge($deleted, $results);
+                    } else {
+                        $deleted[] = $file->getPathname();
                     }
-                    $deleted[] = $file->getPathname();
                 }
             }
         }
