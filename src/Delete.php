@@ -168,7 +168,7 @@ class Delete extends RotateAbstract
             $interval = DateInterval::createFromDateString($timePeriod);
         }
 
-        $oldestDate = clone $this->now;
+        $oldestDate = clone $this->getNow();
         $oldestDate = $oldestDate->sub($interval);
 
         $dir = new DirectoryIterator($this->getFilenameFormat()->getPath());
@@ -213,7 +213,7 @@ class Delete extends RotateAbstract
             $interval = DateInterval::createFromDateString($timePeriod);
         }
 
-        $oldestDate = clone $this->now;
+        $oldestDate = clone $this->getNow();
         $oldestDate = $oldestDate->sub($interval);
 
         $dir = new DirectoryIterator($this->getFilenameFormat()->getPath());

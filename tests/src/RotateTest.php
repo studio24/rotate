@@ -6,6 +6,11 @@ use studio24\Rotate\DirectoryIterator;
 
 class RotateTest extends PHPUnit_Framework_TestCase
 {
+	/**
+	 * Path to tmp logs folder: tests/tmp/
+	 *
+	 * @var string
+	 */
     protected $dir;
 
     protected function setUp()
@@ -63,11 +68,14 @@ class RotateTest extends PHPUnit_Framework_TestCase
         $rotate->setDryRun(true);
 
         $files = $rotate->run();
-        $this->assertEquals([
+        $expected = [
             './orders.log.2',
             './orders.log.1',
             './orders.log'
-        ], $files);
+        ];
+
+        // Use array_diff() to compare results since cannot guarantee return order of filenames
+        $this->assertEquals([], array_diff($files, $expected));
 
         chdir($oldDir);
     }
@@ -162,19 +170,21 @@ class RotateTest extends PHPUnit_Framework_TestCase
 
         $rotate->setNow(new DateTime('2016-04-26 00:00:00'));
         $files = $rotate->deleteByFilenameTime('1 month');
-        $this->assertEquals([
+        $expected = [
             './payment.20160324.log',
             './payment.20160325.log'
-        ], $files);
+        ];
+        $this->assertEquals([], array_diff($files, $expected));
 
         $rotate->setNow(new DateTime('2016-04-08 00:00:00'));
         $files = $rotate->deleteByFilenameTime(new DateInterval('P7D'));
-        $this->assertEquals([
+        $expected = [
             './payment.20160324.log',
             './payment.20160325.log',
             './payment.20160326.log',
             './payment.20160331.log'
-        ], $files);
+        ];
+        $this->assertEquals([], array_diff($files, $expected));
 
         $rotate->setDryRun(false);
         $rotate->setNow(new DateTime('2016-04-26 00:00:00'));
@@ -210,19 +220,21 @@ class RotateTest extends PHPUnit_Framework_TestCase
 
         $rotate->setNow(new DateTime('2016-03-09 13:00:00'));
         $files = $rotate->deleteByFileModifiedDate('7 days');
-        $this->assertEquals([
+        $expected = [
             './test1.log',
             './test2.log'
-        ], $files);
+        ];
+        $this->assertEquals([], array_diff($files, $expected));
 
         $rotate->setDryRun(false);
         $rotate->setNow(new DateTime('2016-03-14 12:00:00'));
         $files = $rotate->deleteByFileModifiedDate('7 days');
-        $this->assertEquals([
+        $expected = [
             './test1.log',
             './test2.log',
             './test3.log'
-        ], $files);
+        ];
+        $this->assertEquals([], array_diff($files, $expected));
         $this->assertFalse(file_exists('test1.log'));
         $this->assertTrue(file_exists('test4.log'));
 
@@ -267,12 +279,13 @@ class RotateTest extends PHPUnit_Framework_TestCase
         $rotate->addSafeRecursiveDeletePath(realpath(__DIR__ . '/../tmp'));
         $rotate->setNow(new DateTime('2016-05-01 12:00:00'));
         $files = $rotate->deleteByFilenameTime('1 month');
-        $this->assertEquals([
+        $expected = [
             realpath(__DIR__ . '/../tmp/folders') . '/2/3/test.3.log',
             realpath(__DIR__ . '/../tmp/folders') . '/2/3',
             realpath(__DIR__ . '/../tmp/folders') . '/2/test.2.log',
             realpath(__DIR__ . '/../tmp/folders') . '/2'
-        ], $files);
+        ];
+        $this->assertEquals([], array_diff($files, $expected));
 
         chdir($oldDir);
     }
@@ -312,5 +325,32 @@ class RotateTest extends PHPUnit_Framework_TestCase
 
         chdir($oldDir);
     }
+	
+	public function testNowUnset()
+	{
+        $oldDir = getcwd();
+        if (!is_dir($this->dir . '/logs/testUnset')) {
+           mkdir($this->dir . '/logs/testUnset');
+        }
+        chdir($this->dir . '/logs/testUnset');
+
+		$now = new DateTime();
+		$now->sub(new DateInterval('P1D'));
+        touch('test1.log', $now->getTimestamp());
+		$now->sub(new DateInterval('P1D'));
+        touch('test2.log', $now->getTimestamp());
+		$now->sub(new DateInterval('P1D'));
+        touch('test3.log', $now->getTimestamp());
+		
+		$logDelete = new studio24\Rotate\Delete('test*.log');
+		$files = $logDelete->deleteByFileModifiedDate('1 day');
+        $expected = [
+            './test2.log',
+            './test3.log',
+        ];
+        $this->assertEquals([], array_diff($files, $expected));
+		
+		chdir($oldDir);
+	}
 
 }
